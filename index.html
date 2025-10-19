@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleBlog - Read & Write in Telegram</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading" class="screen active">
+            <div class="loader"></div>
+            <p>Starting TeleBlog...</p>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div id="welcome" class="screen">
+            <div class="container">
+                <h1>📝 TeleBlog</h1>
+                <p>Read and write articles directly in Telegram</p>
+                <div class="user-info" id="user-info" style="display: none;">
+                    <img id="user-avatar" src="" alt="User Avatar">
+                    <h2 id="user-name">User</h2>
+                    <p id="user-username">@username</p>
+                </div>
+                <button id="start-btn" class="btn primary">Get Started</button>
+                <div class="debug-info">
+                    <p><small>Mini App: <span id="app-status">Checking...</span></small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="main-app" class="screen">
+            <header>
+                <h1>TeleBlog</h1>
+                <button id="user-menu">👤</button>
+            </header>
+
+            <main>
+                <div class="tabs">
+                    <button class="tab active" data-tab="feed">📰 Feed</button>
+                    <button class="tab" data-tab="write">✍️ Write</button>
+                    <button class="tab" data-tab="profile">👤 Profile</button>
+                </div>
+
+                <!-- Feed Tab -->
+                <div id="feed" class="tab-content active">
+                    <div class="posts-container" id="posts-container">
+                        <!-- Posts will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Write Tab -->
+                <div id="write" class="tab-content">
+                    <div class="compose-container">
+                        <input type="text" id="post-title" placeholder="Post title...">
+                        <textarea id="post-content" placeholder="Write your article..."></textarea>
+                        <button id="publish-btn" class="btn primary">Publish Article</button>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profile" class="tab-content">
+                    <div class="profile-container">
+                        <img id="profile-avatar" src="" alt="Profile" class="profile-avatar">
+                        <h2 id="profile-name">User Name</h2>
+                        <p id="profile-username">@username</p>
+                        
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="number" id="posts-count">0</span>
+                                <span class="label">Posts</span>
+                            </div>
+                            <div class="stat">
+                                <span class="number" id="likes-count">0</span>
+                                <span class="label">Likes</span>
+                            </div>
+                            <div class="stat">
+                                <span class="number" id="views-count">0</span>
+                                <span class="label">Views</span>
+                            </div>
+                        </div>
+
+                        <button id="logout-btn" class="btn secondary">Logout</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
