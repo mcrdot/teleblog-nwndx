@@ -9,25 +9,14 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading" class="screen active">
-            <div class="loader"></div>
-            <p>Starting TeleBlog...</p>
+        <!-- Welcome Screen (DEFAULT - NO LOADER) -->
+        <div id="welcome" class="screen active">
+            <div class="container">
+                <h1>📝 TeleBlog</h1>
+                <p>Read and write articles directly in Telegram</p>
+                <button id="start-btn" class="btn primary">Get Started</button>
+            </div>
         </div>
-
-       <!-- Welcome Screen -->
-<div id="welcome" class="screen">
-    <div class="container">
-        <h1>📝 TeleBlog</h1>
-        <p>Read and write articles directly in Telegram</p>
-        <div class="user-info" id="user-info" style="display: none;">
-            <img id="user-avatar" src="" alt="User Avatar">
-            <h2 id="user-name">User</h2>
-            <p id="user-username">@username</p>
-        </div>
-        <button id="start-btn" class="btn primary">Get Started</button>
-    </div>
-</div>
 
         <!-- Main App Screen -->
         <div id="main-app" class="screen">
@@ -46,7 +35,11 @@
                 <!-- Feed Tab -->
                 <div id="feed" class="tab-content active">
                     <div class="posts-container" id="posts-container">
-                        <!-- Posts will be loaded here -->
+                        <div class="empty-state">
+                            <div class="icon">📝</div>
+                            <h3>No posts yet</h3>
+                            <p>Write your first post to get started!</p>
+                        </div>
                     </div>
                 </div>
 
@@ -62,7 +55,7 @@
                 <!-- Profile Tab -->
                 <div id="profile" class="tab-content">
                     <div class="profile-container">
-                        <img id="profile-avatar" src="" alt="Profile" class="profile-avatar">
+                        <img id="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Profile" class="profile-avatar">
                         <h2 id="profile-name">User Name</h2>
                         <p id="profile-username">@username</p>
                         
