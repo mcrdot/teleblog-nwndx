@@ -305,3 +305,46 @@ header h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
 }
+
+/* Hide debug info and external references */
+.debug-info {
+    display: none !important;
+}
+
+/* Smooth transitions */
+.screen {
+    transition: opacity 0.3s ease;
+}
+
+/* Better loading states */
+#loading {
+    background: var(--bg-primary);
+}
+
+/* Telegram-specific optimizations */
+.tg-optimized {
+    /* Hide any external URLs from user view */
+}
+
+/* Minimal animations */
+.btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+}
+
+/* Success states */
+.btn.success {
+    background: #4CAF50 !important;
+}
+
+/* Error states for validation */
+.input-error {
+    border-color: #f44336 !important;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}

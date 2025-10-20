@@ -1,69 +1,65 @@
-// TeleBlog Mini App - Core Functionality
+// TeleBlog Mini App - Enhanced Version
 class TeleBlogApp {
     constructor() {
         this.tg = window.Telegram?.WebApp;
         this.currentUser = null;
-        this.isInitialized = false;
-        
         this.init();
     }
 
     init() {
         console.log('🚀 Initializing TeleBlog Mini App...');
         
-        // Show loading screen first
+        // Show loading screen briefly (500ms max)
         this.showScreen('loading');
         
         // Initialize Telegram Web App
         if (this.tg) {
             this.tg.ready();
             this.tg.expand();
+            this.tg.disableVerticalSwipes(); // Better UX
             
-            console.log('📱 Telegram WebApp detected:', {
-                platform: this.tg.platform,
-                version: this.tg.version,
-                initData: this.tg.initData ? 'available' : 'missing',
-                initDataUnsafe: this.tg.initDataUnsafe ? 'available' : 'missing'
-            });
-
-            // Update app status
-            document.getElementById('app-status').textContent = '✅ Ready in Telegram';
+            console.log('📱 Telegram WebApp detected');
             
-            // Try to get user data
-            this.handleTelegramUser();
+            // Quick check for user data (no delays)
+            if (this.tg.initDataUnsafe?.user) {
+                this.handleTelegramUser();
+            } else {
+                // No user data, show welcome immediately
+                setTimeout(() => this.showScreen('welcome'), 300);
+            }
         } else {
-            console.log('🌐 Regular browser environment');
-            document.getElementById('app-status').textContent = '🌐 Web Browser Mode';
-            this.showScreen('welcome');
+            // Not in Telegram, show welcome immediately
+            setTimeout(() => this.showScreen('welcome'), 300);
         }
 
         this.setupEventListeners();
+        
+        // Emergency: Remove loading screen after max 2 seconds
+        setTimeout(() => {
+            if (document.getElementById('loading').classList.contains('active')) {
+                this.showScreen('welcome');
+            }
+        }, 2000);
     }
 
     handleTelegramUser() {
-        if (this.tg.initDataUnsafe?.user) {
-            const user = this.tg.initDataUnsafe.user;
-            console.log('👤 Telegram user detected:', user);
-            
-            this.currentUser = {
-                id: user.id,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                username: user.username,
-                photoUrl: user.photo_url,
-                languageCode: user.language_code
-            };
+        const user = this.tg.initDataUnsafe.user;
+        console.log('👤 Telegram user detected:', user);
+        
+        this.currentUser = {
+            id: user.id,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            username: user.username,
+            photoUrl: user.photo_url,
+            languageCode: user.language_code
+        };
 
-            this.updateUserInterface();
-            this.showScreen('main-app');
-            
-            // Load initial data
-            this.loadFeed();
-            
-        } else {
-            console.log('❌ No Telegram user data available');
-            this.showScreen('welcome');
-        }
+        this.updateUserInterface();
+        
+        // Show main app immediately (no welcome screen in Telegram)
+        this.showScreen('main-app');
+        this.loadFeed();
     }
 
     updateUserInterface() {
@@ -72,12 +68,9 @@ class TeleBlogApp {
         const displayName = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
         const username = this.currentUser.username ? '@' + this.currentUser.username : 'Telegram User';
 
-        // Update welcome screen
+        // Update all user info displays
         document.getElementById('user-name').textContent = displayName;
         document.getElementById('user-username').textContent = username;
-        document.getElementById('user-info').style.display = 'block';
-
-        // Update profile screen
         document.getElementById('profile-name').textContent = displayName;
         document.getElementById('profile-username').textContent = username;
 
@@ -85,7 +78,14 @@ class TeleBlogApp {
         if (this.currentUser.photoUrl) {
             document.getElementById('user-avatar').src = this.currentUser.photoUrl;
             document.getElementById('profile-avatar').src = this.currentUser.photoUrl;
+        } else {
+            // Default avatar
+            document.getElementById('user-avatar').src = 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png';
+            document.getElementById('profile-avatar').src = 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png';
         }
+        
+        // Show user info in welcome screen
+        document.getElementById('user-info').style.display = 'block';
     }
 
     setupEventListeners() {
@@ -95,7 +95,7 @@ class TeleBlogApp {
                 this.showScreen('main-app');
                 this.loadFeed();
             } else {
-                // Demo mode - create fake user
+                // Demo mode
                 this.currentUser = {
                     id: 'demo_user',
                     firstName: 'Demo',
@@ -116,12 +116,12 @@ class TeleBlogApp {
             });
         });
 
-        // Publish button
+        // Publish button - silent action
         document.getElementById('publish-btn').addEventListener('click', () => {
             this.publishPost();
         });
 
-        // Logout button
+        // Logout button - minimal confirmation
         document.getElementById('logout-btn').addEventListener('click', () => {
             this.logout();
         });
@@ -169,32 +169,22 @@ class TeleBlogApp {
             </div>
         `;
 
-        // Simulate API call delay
+        // Simulate API call
         setTimeout(() => {
-            // Demo posts for now
             const demoPosts = [
                 {
                     id: 1,
-                    title: 'Welcome to TeleBlog!',
-                    content: 'This is your personal blogging space within Telegram. Start writing your first post!',
-                    author: 'TeleBlog Team',
+                    title: 'Welcome to TeleBlog! 🎉',
+                    content: 'Start writing your thoughts and share them with the world. Your personal blogging space within Telegram.',
+                    author: this.currentUser?.username ? '@' + this.currentUser.username : 'You',
                     date: new Date().toISOString(),
-                    likes: 5,
-                    views: 23
-                },
-                {
-                    id: 2,
-                    title: 'How to Use TeleBlog',
-                    content: 'Simply switch to the Write tab and start composing your articles. Your posts will be saved and can be shared with others.',
-                    author: 'TeleBlog Team',
-                    date: new Date(Date.now() - 86400000).toISOString(),
-                    likes: 12,
-                    views: 45
+                    likes: 0,
+                    views: 1
                 }
             ];
 
             this.renderPosts(demoPosts);
-        }, 1000);
+        }, 800);
     }
 
     renderPosts(posts) {
@@ -205,7 +195,7 @@ class TeleBlogApp {
                 <div class="empty-state">
                     <div class="icon">📝</div>
                     <h3>No posts yet</h3>
-                    <p>Be the first to write something amazing!</p>
+                    <p>Write your first post to get started!</p>
                 </div>
             `;
             return;
@@ -234,58 +224,60 @@ class TeleBlogApp {
         const content = document.getElementById('post-content').value.trim();
 
         if (!title || !content) {
-            alert('Please fill in both title and content');
+            // Silent validation - just highlight empty fields
+            if (!title) document.getElementById('post-title').style.borderColor = 'red';
+            if (!content) document.getElementById('post-content').style.borderColor = 'red';
+            setTimeout(() => {
+                document.getElementById('post-title').style.borderColor = '';
+                document.getElementById('post-content').style.borderColor = '';
+            }, 1000);
             return;
         }
 
         const publishBtn = document.getElementById('publish-btn');
+        const originalText = publishBtn.textContent;
+        
         publishBtn.textContent = 'Publishing...';
         publishBtn.disabled = true;
 
         // Simulate API call
         setTimeout(() => {
-            // Show success message
-            if (this.tg) {
-                this.tg.showPopup({
-                    title: 'Success!',
-                    message: 'Your post has been published successfully.',
-                    buttons: [{ type: 'ok' }]
-                });
-            } else {
-                alert('Post published successfully!');
-            }
-
-            // Clear form
+            // Success - clear form and switch to feed
             document.getElementById('post-title').value = '';
             document.getElementById('post-content').value = '';
 
             // Reset button
-            publishBtn.textContent = 'Publish Article';
+            publishBtn.textContent = originalText;
             publishBtn.disabled = false;
 
-            // Switch to feed and reload
+            // Switch to feed and show the new post
             this.switchTab('feed');
+            
+            // Add visual feedback (no popup)
+            publishBtn.style.backgroundColor = '#4CAF50';
+            setTimeout(() => {
+                publishBtn.style.backgroundColor = '';
+            }, 1000);
 
-        }, 1500);
+        }, 1000);
     }
 
     loadProfile() {
-        // Update profile stats (demo data for now)
-        document.getElementById('posts-count').textContent = '2';
-        document.getElementById('likes-count').textContent = '17';
-        document.getElementById('views-count').textContent = '68';
+        // Update profile stats
+        document.getElementById('posts-count').textContent = '1';
+        document.getElementById('likes-count').textContent = '0';
+        document.getElementById('views-count').textContent = '1';
     }
 
     logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            this.currentUser = null;
-            this.showScreen('welcome');
-            
-            // Reset UI
-            document.getElementById('user-info').style.display = 'none';
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-content').value = '';
-        }
+        // Simple logout without confirmation popup
+        this.currentUser = null;
+        this.showScreen('welcome');
+        
+        // Reset UI
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
     }
 
     escapeHtml(text) {
@@ -295,12 +287,12 @@ class TeleBlogApp {
     }
 }
 
-// Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize immediately when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.teleBlogApp = new TeleBlogApp();
+    });
+} else {
+    // DOM already ready
     window.teleBlogApp = new TeleBlogApp();
-});
-
-// Export for global access
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = TeleBlogApp;
 }
