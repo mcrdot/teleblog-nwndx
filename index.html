@@ -3,84 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeleBlog - Read & Write in Telegram</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>TeleBlog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #000000;
+        }
+        
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #2481cc;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            border-bottom-color: #2481cc;
+            color: #2481cc;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .post-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .profile-container {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            height: 200px;
+            resize: vertical;
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-DHccNPjJ.js"></script>
 </head>
 <body>
-    <div id="app">
-        <!-- Welcome Screen (DEFAULT - NO LOADER) -->
-        <div id="welcome" class="screen active">
-            <div class="container">
-                <h1>📝 TeleBlog</h1>
-                <p>Read and write articles directly in Telegram</p>
-                <button id="start-btn" class="btn primary">Get Started</button>
-            </div>
-        </div>
-
-        <!-- Main App Screen -->
-        <div id="main-app" class="screen">
-            <header>
-                <h1>TeleBlog</h1>
-                <button id="user-menu">👤</button>
-            </header>
-
-            <main>
-                <div class="tabs">
-                    <button class="tab active" data-tab="feed">📰 Feed</button>
-                    <button class="tab" data-tab="write">✍️ Write</button>
-                    <button class="tab" data-tab="profile">👤 Profile</button>
-                </div>
-
-                <!-- Feed Tab -->
-                <div id="feed" class="tab-content active">
-                    <div class="posts-container" id="posts-container">
-                        <div class="empty-state">
-                            <div class="icon">📝</div>
-                            <h3>No posts yet</h3>
-                            <p>Write your first post to get started!</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Write Tab -->
-                <div id="write" class="tab-content">
-                    <div class="compose-container">
-                        <input type="text" id="post-title" placeholder="Post title...">
-                        <textarea id="post-content" placeholder="Write your article..."></textarea>
-                        <button id="publish-btn" class="btn primary">Publish Article</button>
-                    </div>
-                </div>
-
-                <!-- Profile Tab -->
-                <div id="profile" class="tab-content">
-                    <div class="profile-container">
-                        <img id="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Profile" class="profile-avatar">
-                        <h2 id="profile-name">User Name</h2>
-                        <p id="profile-username">@username</p>
-                        
-                        <div class="stats">
-                            <div class="stat">
-                                <span class="number" id="posts-count">0</span>
-                                <span class="label">Posts</span>
-                            </div>
-                            <div class="stat">
-                                <span class="number" id="likes-count">0</span>
-                                <span class="label">Likes</span>
-                            </div>
-                            <div class="stat">
-                                <span class="number" id="views-count">0</span>
-                                <span class="label">Views</span>
-                            </div>
-                        </div>
-
-                        <button id="logout-btn" class="btn secondary">Logout</button>
-                    </div>
-                </div>
-            </main>
+    <!-- Welcome Screen -->
+    <div id="welcome" class="screen active">
+        <div class="container">
+            <h1>📝 TeleBlog</h1>
+            <p>Read and write articles directly in Telegram</p>
+            <button id="start-btn" class="btn">Get Started</button>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Main App -->
+    <div id="main-app" class="screen">
+        <header style="padding: 15px; border-bottom: 1px solid #e0e0e0;">
+            <h1 style="font-size: 1.25rem; text-align: center;">TeleBlog</h1>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="feed">📰 Feed</button>
+            <button class="tab" data-tab="write">✍️ Write</button>
+            <button class="tab" data-tab="profile">👤 Profile</button>
+        </div>
+
+        <div id="feed" class="tab-content active">
+            <div id="posts-container">
+                <div class="post-card">
+                    <h3>Welcome to TeleBlog! 🎉</h3>
+                    <p>Start writing your thoughts and share them with the world.</p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.875rem; color: #666;">
+                        <span>By You</span>
+                        <span>❤️ 0 | 👁️ 1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="write" class="tab-content">
+            <div style="padding: 20px;">
+                <input type="text" id="post-title" placeholder="Post title...">
+                <textarea id="post-content" placeholder="Write your article..."></textarea>
+                <button id="publish-btn" class="btn">Publish Article</button>
+            </div>
+        </div>
+
+        <div id="profile" class="tab-content">
+            <div class="profile-container">
+                <img id="profile-avatar" class="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png">
+                <h2 id="profile-name">User Name</h2>
+                <p id="profile-username">@username</p>
+                
+                <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="posts-count">0</div>
+                        <div style="font-size: 0.875rem; color: #666;">Posts</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="likes-count">0</div>
+                        <div style="font-size: 0.875rem; color: #666;">Likes</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold;" id="views-count">0</div>
+                        <div style="font-size: 0.875rem; color: #666;">Views</div>
+                    </div>
+                </div>
+
+                <button id="logout-btn" class="btn" style="background: #666;">Logout</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
