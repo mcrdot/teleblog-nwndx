@@ -122,6 +122,13 @@
         </div>
     </div>
 
+<!-- Welcome Screen debug section -->
+<div class="user-info" id="user-info" style="display: none;">
+    <img id="user-avatar" src="" alt="User Avatar" style="width: 60px; height: 60px; border-radius: 50%;">
+    <h2 id="user-name">User</h2>
+    <p id="user-username">@username</p>
+</div>
+
     <!-- Main App -->
     <div id="main-app" class="screen">
         <header style="padding: 15px; border-bottom: 1px solid #e0e0e0;">
@@ -181,110 +188,171 @@
         </div>
     </div>
 
-    <script>
-        // SIMPLE TeleBlog App - All in one file
-        class TeleBlogApp {
-            constructor() {
-                this.tg = window.Telegram?.WebApp;
-                this.currentUser = null;
-                this.init();
+<script>
+class TeleBlogApp {
+    constructor() {
+        this.tg = window.Telegram?.WebApp;
+        this.currentUser = null;
+        this.init();
+    }
+
+    init() {
+        console.log('🚀 Starting TeleBlog...');
+        
+        // Show welcome screen immediately
+        this.showScreen('welcome');
+        
+        // Enhanced Telegram detection
+        this.detectTelegramUser();
+        
+        this.setupEventListeners();
+    }
+
+    detectTelegramUser() {
+        if (!this.tg) {
+            console.log('❌ Telegram WebApp not detected');
+            return;
+        }
+
+        console.log('📱 Telegram WebApp Found:', {
+            platform: this.tg.platform,
+            version: this.tg.version,
+            initData: this.tg.initData ? 'Available' : 'Missing',
+            initDataUnsafe: this.tg.initDataUnsafe ? 'Available' : 'Missing'
+        });
+
+        // Initialize Telegram
+        this.tg.ready();
+        this.tg.expand();
+
+        // METHOD 1: Check initDataUnsafe (most common)
+        if (this.tg.initDataUnsafe?.user) {
+            console.log('✅ REAL USER DETECTED via initDataUnsafe:', this.tg.initDataUnsafe.user);
+            this.handleTelegramUser(this.tg.initDataUnsafe.user);
+            return;
+        }
+
+        // METHOD 2: Check if initData string contains user info
+        if (this.tg.initData) {
+            console.log('🔍 Checking initData string...');
+            const userData = this.parseInitData(this.tg.initData);
+            if (userData) {
+                console.log('✅ REAL USER DETECTED via initData:', userData);
+                this.handleTelegramUser(userData);
+                return;
             }
+        }
 
-            init() {
-                console.log('🚀 Starting TeleBlog...');
-                
-                // Show welcome screen immediately
-                this.showScreen('welcome');
-                
-                // Check for Telegram user
-                this.checkTelegramUser();
-                
-                this.setupEventListeners();
+        // METHOD 3: Wait a bit and check again (Telegram might be slow)
+        setTimeout(() => {
+            if (this.tg.initDataUnsafe?.user) {
+                console.log('✅ USER DETECTED AFTER DELAY:', this.tg.initDataUnsafe.user);
+                this.handleTelegramUser(this.tg.initDataUnsafe.user);
+            } else {
+                console.log('❌ No Telegram user data available');
+                // Show debug info
+                this.showTelegramDebugInfo();
             }
+        }, 1000);
+    }
 
-            checkTelegramUser() {
-                // Check classic Telegram WebApp
-                if (this.tg) {
-                    console.log('📱 Telegram WebApp detected');
-                    
-                    try {
-                        this.tg.ready();
-                        this.tg.expand();
-                        
-                        if (this.tg.initDataUnsafe?.user) {
-                            console.log('✅ Telegram User found:', this.tg.initDataUnsafe.user);
-                            this.handleTelegramUser(this.tg.initDataUnsafe.user);
-                            return;
-                        }
-                    } catch (error) {
-                        console.log('❌ Telegram init failed');
-                    }
-                }
-                
-                console.log('🌐 No Telegram user - demo mode available');
+    parseInitData(initData) {
+        try {
+            const params = new URLSearchParams(initData);
+            const userStr = params.get('user');
+            if (userStr) {
+                return JSON.parse(decodeURIComponent(userStr));
             }
+        } catch (error) {
+            console.error('Error parsing initData:', error);
+        }
+        return null;
+    }
 
-            handleTelegramUser(tgUser) {
-                this.currentUser = {
-                    id: tgUser.id,
-                    firstName: tgUser.first_name,
-                    lastName: tgUser.last_name,
-                    username: tgUser.username,
-                    photoUrl: tgUser.photo_url
-                };
+    showTelegramDebugInfo() {
+        // Add debug info to welcome screen
+        const debugInfo = `
+            <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 10px; font-size: 12px;">
+                <strong>Debug Info:</strong><br>
+                Platform: ${this.tg?.platform || 'Unknown'}<br>
+                Version: ${this.tg?.version || 'Unknown'}<br>
+                initData: ${this.tg?.initData ? 'Available' : 'Missing'}<br>
+                initDataUnsafe: ${this.tg?.initDataUnsafe ? 'Available' : 'Missing'}
+            </div>
+        `;
+        document.querySelector('.container').innerHTML += debugInfo;
+    }
 
-                console.log('✅ Telegram user authenticated:', this.currentUser.username);
-                
-                // Update UI with REAL Telegram user
-                this.updateUserInterface();
-                
-                // In Telegram, go directly to main app
+    handleTelegramUser(tgUser) {
+        this.currentUser = {
+            id: tgUser.id,
+            firstName: tgUser.first_name,
+            lastName: tgUser.last_name || '',
+            username: tgUser.username,
+            photoUrl: tgUser.photo_url
+        };
+
+        console.log('👤 Telegram User Authenticated:', this.currentUser);
+        
+        // Update UI with REAL Telegram user immediately
+        this.updateUserInterface();
+        
+        // AUTO-REDIRECT to main app in Telegram (no need for Get Started button)
+        this.showScreen('main-app');
+        this.loadFeed();
+    }
+
+    updateUserInterface() {
+        if (!this.currentUser) return;
+
+        const displayName = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
+        const username = this.currentUser.username ? '@' + this.currentUser.username : 'Telegram User';
+
+        console.log('📝 Updating UI with real user:', username);
+
+        // Update ALL user displays
+        const profileName = document.getElementById('profile-name');
+        const profileUsername = document.getElementById('profile-username');
+        const profileAvatar = document.getElementById('profile-avatar');
+        
+        if (profileName) profileName.textContent = displayName;
+        if (profileUsername) profileUsername.textContent = username;
+        if (profileAvatar && this.currentUser.photoUrl) {
+            profileAvatar.src = this.currentUser.photoUrl;
+        }
+
+        // Update welcome screen too
+        const welcomeUserInfo = document.getElementById('user-info');
+        if (welcomeUserInfo) {
+            welcomeUserInfo.style.display = 'block';
+            document.getElementById('user-name').textContent = displayName;
+            document.getElementById('user-username').textContent = username;
+        }
+    }
+
+    setupEventListeners() {
+        // Get Started button (for demo mode or when Telegram fails)
+        document.getElementById('start-btn').addEventListener('click', () => {
+            if (this.currentUser) {
+                // Already have Telegram user
                 this.showScreen('main-app');
                 this.loadFeed();
-            }
-
-            updateUserInterface() {
-                if (!this.currentUser) return;
-
-                const displayName = this.currentUser.firstName + (this.currentUser.lastName ? ' ' + this.currentUser.lastName : '');
-                const username = this.currentUser.username ? '@' + this.currentUser.username : 'Telegram User';
-
-                console.log('📝 Updating UI for:', username);
-
-                // Update profile with REAL Telegram data
-                const profileName = document.getElementById('profile-name');
-                const profileUsername = document.getElementById('profile-username');
-                const profileAvatar = document.getElementById('profile-avatar');
+            } else {
+                // Demo mode - but make it clear it's demo
+                this.currentUser = {
+                    id: 'demo',
+                    firstName: 'Demo',
+                    lastName: 'User', 
+                    username: 'demo_user'
+                };
+                this.updateUserInterface();
+                this.showScreen('main-app');
+                this.loadFeed();
                 
-                if (profileName) profileName.textContent = displayName;
-                if (profileUsername) profileUsername.textContent = username;
-                if (profileAvatar && this.currentUser.photoUrl) {
-                    profileAvatar.src = this.currentUser.photoUrl;
-                }
+                // Show message that we're in demo mode
+                alert('🔍 Demo Mode: In Telegram, this would show your real username automatically!');
             }
-
-            setupEventListeners() {
-                // Get Started button - FIXED
-                document.getElementById('start-btn').addEventListener('click', () => {
-                    console.log('🎯 Get Started clicked');
-                    
-                    if (this.currentUser) {
-                        // Telegram user exists
-                        this.showScreen('main-app');
-                        this.loadFeed();
-                    } else {
-                        // Demo mode
-                        this.currentUser = {
-                            id: 'demo',
-                            firstName: 'Demo',
-                            lastName: 'User', 
-                            username: 'demo_user'
-                        };
-                        this.updateUserInterface();
-                        this.showScreen('main-app');
-                        this.loadFeed();
-                    }
-                });
+        });
 
                 // Tab switching
                 document.querySelectorAll('.tab').forEach(tab => {
@@ -405,11 +473,10 @@
             }
         }
 
-        // Initialize app when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 DOM ready - starting TeleBlog');
-            window.teleBlogApp = new TeleBlogApp();
-        });
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    window.teleBlogApp = new TeleBlogApp();
+});
     </script>
 </body>
 </html>
